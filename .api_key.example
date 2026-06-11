@@ -1,0 +1,4 @@
+# 硅基流动 API Key 配置
+# 复制此文件为 .api_key 并填入你的 Key
+# 获取地址: https://siliconflow.cn/
+SILICONFLOW_API_KEY=your-api-key-here

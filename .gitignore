@@ -1,0 +1,33 @@
+# 敏感文件
+.api_key
+.env
+
+# 运行时数据
+chroma_db/
+output/
+venv/
+__pycache__/
+*.pyc
+*.pyo
+
+# Codegraph
+.codegraph/
+
+# Reasonix 运行时数据（保留 skills 定义）
+.reasonix/*.json
+.reasonix/attachments/
+
+# PDF 测试文件
+*.pdf
+
+# Word 文档测试数据
+review_material.doc
+review_material.docx
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
