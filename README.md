@@ -53,6 +53,11 @@ python interactive_search.py --pdf your-book.pdf
 | 复习资料处理 | Word 文档 → 问答提取 → 页码匹配 → 格式化输出 |
 | 配置灵活 | 命令行参数 / .env 文件 / 环境变量，三级优先级 |
 | 中文优化 | 默认 Qwen3-VL-Embedding-8B 中文嵌入模型 |
+| 多语言章节检测 | 支持中/英/日文 PDF 的章节结构自动识别 |
+| 噪声过滤 | 自动排除目录、索引、参考文献等噪声页面 |
+| 多栏布局 | 自动检测双栏排版，正确合并文本顺序 |
+| 页眉页脚去除 | 模式匹配检测重复页眉页脚并自动去除 |
+| 章节过滤 | 搜索时可指定章节范围，精准定位内容 |
 
 ---
 
@@ -91,7 +96,7 @@ pdf-vector-search/
 
 **Unix / macOS：**
 ```bash
-git clone <repo-url>
+git clone https://github.com/MakeBlackSheepGreat/pdf-vector-search.git
 cd pdf-vector-search
 chmod +x setup.sh
 ./setup.sh
@@ -99,7 +104,7 @@ chmod +x setup.sh
 
 **Windows：**
 ```cmd
-git clone <repo-url>
+git clone https://github.com/MakeBlackSheepGreat/pdf-vector-search.git
 cd pdf-vector-search
 setup.bat
 ```
