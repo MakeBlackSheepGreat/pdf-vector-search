@@ -53,7 +53,6 @@ _NOISE_PATTERNS = [
     (r"^致谢$", "preface"),
     # 日文
     (r"^目次$", "toc"),
-    (r"^参考文献$", "bibliography"),
     # 通用：Supplementary Material
     (r"^supplementary\s+(material|data|information|table|figure)", "appendix"),
     (r"^(supporting\s+information|additional\s+file)", "appendix"),
@@ -498,7 +497,7 @@ def detect_headers_footers(pdf, sample_size: int = 30) -> Tuple[set, set]:
 
 # ── 主入口：综合结构分析 ──────────────────────────────────
 
-def analyze_pdf_structure(pdf_path: str) -> Tuple[List[PageInfo], List[Dict]]:
+def analyze_pdf_structure(pdf_path: str, pdf=None) -> Tuple[List[PageInfo], List[Dict]]:
     """分析 PDF 文档结构，返回每页信息和章节列表
 
     多策略融合：
@@ -508,6 +507,7 @@ def analyze_pdf_structure(pdf_path: str) -> Tuple[List[PageInfo], List[Dict]]:
 
     Args:
         pdf_path: PDF 文件路径
+        pdf: 可选的已打开 fitz.Document 对象（避免重复打开）
 
     Returns:
         (pages, chapters)
@@ -515,7 +515,9 @@ def analyze_pdf_structure(pdf_path: str) -> Tuple[List[PageInfo], List[Dict]]:
         chapters: List[Dict] — 章节列表 [{"title": str, "page": int, "level": int}]
     """
     import fitz
-    pdf = fitz.open(pdf_path)
+    close_pdf = pdf is None
+    if pdf is None:
+        pdf = fitz.open(pdf_path)
     total = pdf.page_count
 
     # 策略 1: PDF 书签
@@ -559,7 +561,8 @@ def analyze_pdf_structure(pdf_path: str) -> Tuple[List[PageInfo], List[Dict]]:
     # 噪声检测
     pages = detect_noise_pages(pdf, pages)
 
-    pdf.close()
+    if close_pdf:
+        pdf.close()
     return pages, chapters
 
 

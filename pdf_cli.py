@@ -68,12 +68,15 @@ def cmd_build(args):
     from config import get_config
     from vector_search import PDFVectorSearch
 
-    cfg = get_config(
-        pdf_path=args.pdf,
-        collection_name=args.collection or "pdf_collection",
-        chunk_size=args.chunk_size or 512,
-        chunk_overlap=args.chunk_overlap or 50,
-    )
+    overrides = {"pdf_path": args.pdf}
+    if args.collection:
+        overrides["collection_name"] = args.collection
+    if args.chunk_size:
+        overrides["chunk_size"] = args.chunk_size
+    if args.chunk_overlap:
+        overrides["chunk_overlap"] = args.chunk_overlap
+
+    cfg = get_config(**overrides)
     cfg.validate(require_pdf=True)
 
     searcher = PDFVectorSearch(cfg)
@@ -94,10 +97,11 @@ def cmd_search(args):
     from config import get_config
     from vector_search import PDFVectorSearch, direct_query
 
-    cfg = get_config(
-        collection_name=args.collection or "pdf_collection",
-        top_k=args.top_k or 5,
-    )
+    overrides = {"top_k": args.top_k or 5}
+    if args.collection:
+        overrides["collection_name"] = args.collection
+
+    cfg = get_config(**overrides)
     cfg.validate()
 
     if args.direct:
@@ -156,24 +160,25 @@ def cmd_search(args):
 def cmd_chapters(args):
     """列出章节结构"""
     from config import get_config
-    from vector_search import PDFVectorSearch
-    from pdf_structure import get_chapter_tree
+    from pdf_structure import analyze_pdf_structure, get_chapter_tree
 
-    cfg = get_config(
-        pdf_path=args.pdf,
-        collection_name=args.collection or "pdf_collection",
-    )
-    cfg.validate()
+    cfg = get_config(pdf_path=args.pdf)
+    pdf_path = args.pdf or cfg.pdf_path
+    if not pdf_path:
+        _error("未指定 PDF 文件，请使用 --pdf 参数")
 
-    searcher = PDFVectorSearch(cfg)
-    chapters = searcher.list_chapters(args.pdf)
+    chapters = []
+    try:
+        _, chapters = analyze_pdf_structure(pdf_path)
+    except Exception as e:
+        _error(f"分析 PDF 结构失败: {e}")
 
     tree = get_chapter_tree(chapters) if chapters else ""
 
     _json_output({
         "ok": True,
         "action": "chapters",
-        "pdf": args.pdf or cfg.pdf_path,
+        "pdf": pdf_path,
         "count": len(chapters),
         "chapters": chapters,
         "tree": tree,
@@ -194,7 +199,7 @@ def cmd_read(args):
 
     pages = _parse_pages(args.pages, total)
     headers, footers = detect_headers_footers(pdf)
-    page_infos, _ = analyze_pdf_structure(cfg.pdf_path)
+    page_infos, _ = analyze_pdf_structure(cfg.pdf_path, pdf=pdf)
 
     results = []
     for p in pages:
@@ -347,7 +352,6 @@ def main():
     # chapters
     p_chapters = sub.add_parser("chapters", help="列出章节结构")
     p_chapters.add_argument("--pdf", help="PDF 文件路径")
-    p_chapters.add_argument("--collection", help="集合名称")
 
     # read
     p_read = sub.add_parser("read", help="读取指定页面文本")
